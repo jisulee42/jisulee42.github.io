@@ -7,7 +7,6 @@ import { defineConfig } from 'astro/config';
 // https://astro.build/config
 export default defineConfig({
 	site: 'https://jisulee42.github.io',
-	base: '/tech-blog',
 	trailingSlash: 'always',
 	build: {
 		format: 'directory',
