@@ -2,6 +2,11 @@
 title: 'First post'
 description: 'Lorem ipsum dolor sit amet'
 pubDate: 'Jul 08 2022'
+category: 'Dev'
+tags: ['astro', 'setup']
+series:
+  id: 'astro-blog-foundation'
+  order: 1
 heroImage: '../../assets/blog-placeholder-3.jpg'
 ---
 

@@ -2,6 +2,11 @@
 title: 'Third post'
 description: 'Lorem ipsum dolor sit amet'
 pubDate: 'Jul 22 2022'
+category: 'Infra'
+tags: ['github-pages', 'deployment']
+series:
+  id: 'astro-blog-foundation'
+  order: 3
 heroImage: '../../assets/blog-placeholder-2.jpg'
 ---
 

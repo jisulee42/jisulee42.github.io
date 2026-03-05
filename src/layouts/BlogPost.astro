@@ -2,55 +2,239 @@
 import { Image } from 'astro:assets';
 import type { CollectionEntry } from 'astro:content';
 import BaseHead from '../components/BaseHead.astro';
+import Comments from '../components/Comments.astro';
 import Footer from '../components/Footer.astro';
 import FormattedDate from '../components/FormattedDate.astro';
 import Header from '../components/Header.astro';
+import { withBase } from '../utils/path';
 
-type Props = CollectionEntry<'blog'>['data'];
+type BlogPostData = CollectionEntry<'blog'>['data'];
 
-const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
+interface Props extends BlogPostData {
+	headings: readonly { depth: number; slug: string; text: string }[];
+	previousInSeries: CollectionEntry<'blog'> | null;
+	nextInSeries: CollectionEntry<'blog'> | null;
+}
+
+const {
+	title,
+	description,
+	pubDate,
+	updatedDate,
+	category,
+	tags,
+	heroImage,
+	series,
+	headings,
+	previousInSeries,
+	nextInSeries,
+} = Astro.props;
+
+const tocHeadings = headings.filter((item) => item.depth >= 2 && item.depth <= 4);
 ---
 
-<html lang="en">
+<html lang="ko">
 	<head>
 		<BaseHead title={title} description={description} />
 		<style>
 			main {
-				width: calc(100% - 2em);
-				max-width: 100%;
-				margin: 0;
-			}
-			.hero-image {
-				width: 100%;
-			}
-			.hero-image img {
-				display: block;
+				width: min(1460px, calc(100% - 2rem));
 				margin: 0 auto;
-				border-radius: 12px;
-				box-shadow: var(--box-shadow);
+				display: grid;
+				grid-template-columns: minmax(0, 1080px) 280px;
+				gap: 1.8rem;
+				justify-content: center;
+				align-items: start;
 			}
-			.prose {
-				width: 720px;
-				max-width: calc(100% - 2em);
-				margin: auto;
-				padding: 1em;
-				color: rgb(var(--gray-dark));
+
+			.cover {
+				margin-bottom: 1.1rem;
 			}
-			.title {
-				margin-bottom: 1em;
-				padding: 1em 0;
-				text-align: center;
-				line-height: 1;
+
+			.cover img {
+				width: 100%;
+				border-radius: var(--radius-lg);
+				box-shadow: var(--shadow);
 			}
-			.title h1 {
-				margin: 0 0 0.5em 0;
+
+			.article-head {
+				padding: 1.3rem;
+				border: 1px solid rgb(var(--line));
+				background: rgb(var(--surface));
+				border-radius: var(--radius-lg);
+				margin-bottom: 1rem;
 			}
+
+			.article-head h1 {
+				color: rgb(6, 11, 17);
+			}
+
+			.article-head p {
+				color: rgba(6, 11, 17, 0.72);
+			}
+
+			.head-meta {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 0.5rem;
+				align-items: center;
+				margin-bottom: 0.8rem;
+			}
+
 			.date {
-				margin-bottom: 0.5em;
-				color: rgb(var(--gray));
+				font-size: 0.87rem;
+				color: rgba(6, 11, 17, 0.48);
 			}
-			.last-updated-on {
-				font-style: italic;
+
+			.body {
+				background: rgb(var(--surface));
+				border: 1px solid rgb(var(--line));
+				border-radius: var(--radius-lg);
+				padding: clamp(1.2rem, 2.5vw, 2.4rem);
+				color: rgb(6, 11, 17);
+			}
+
+			.body :global(p),
+			.body :global(li),
+			.body :global(blockquote) {
+				color: rgba(6, 11, 17, 0.8);
+			}
+
+			.body :global(h1),
+			.body :global(h2),
+			.body :global(h3),
+			.body :global(h4) {
+				color: rgb(6, 11, 17);
+			}
+
+			.body :global(a) {
+				color: rgb(35, 117, 227);
+			}
+
+			.body :global(h2),
+			.body :global(h3) {
+				margin-top: 1.9rem;
+			}
+
+			.tag-row {
+				display: flex;
+				gap: 0.5rem;
+				flex-wrap: wrap;
+				margin-top: 1.2rem;
+			}
+
+			.series-box {
+				margin-top: 2rem;
+				padding: 1rem;
+				border: 1px solid rgb(var(--line));
+				background: rgb(var(--surface-strong));
+				border-radius: var(--radius-md);
+			}
+
+			.series-box h3 {
+				margin-bottom: 0.4rem;
+			}
+
+			.series-nav {
+				display: grid;
+				grid-template-columns: repeat(2, minmax(0, 1fr));
+				gap: 0.7rem;
+				margin-top: 0.85rem;
+			}
+
+			.series-nav-card {
+				display: block;
+				text-decoration: none;
+				padding: 0.7rem 0.75rem;
+				border: 1px solid rgb(var(--line));
+				background: rgb(var(--surface));
+				border-radius: 12px;
+				min-height: 72px;
+			}
+
+			.series-nav-card.is-empty {
+				background: rgba(var(--surface), 0.6);
+				opacity: 0.65;
+			}
+
+			.series-nav-label {
+				display: block;
+				font-size: 0.72rem;
+				font-weight: 700;
+				color: rgba(6, 11, 17, 0.48);
+				margin-bottom: 0.24rem;
+				letter-spacing: 0.02em;
+			}
+
+			.series-nav-title {
+				display: block;
+				font-size: 0.89rem;
+				line-height: 1.35;
+				font-weight: 700;
+			}
+
+			.series-nav-next {
+				text-align: right;
+			}
+
+			@media (max-width: 760px) {
+				.series-nav {
+					grid-template-columns: 1fr;
+				}
+
+				.series-nav-next {
+					text-align: left;
+				}
+			}
+
+			.toc {
+				position: sticky;
+				top: 88px;
+				padding: 1rem;
+				border: 1px solid rgb(var(--line));
+				background: rgb(var(--surface));
+				border-radius: var(--radius-md);
+				max-height: calc(100vh - 110px);
+				overflow: auto;
+			}
+
+			.toc h3 {
+				font-size: 0.95rem;
+				margin-bottom: 0.7rem;
+			}
+
+			.toc ul {
+				list-style: none;
+				padding: 0;
+				margin: 0;
+				display: grid;
+				gap: 0.4rem;
+			}
+
+			.toc a {
+				display: block;
+				text-decoration: none;
+				font-size: 0.84rem;
+				color: rgba(6, 11, 17, 0.48);
+				line-height: 1.4;
+			}
+
+			.toc .depth-3 {
+				padding-left: 0.7rem;
+			}
+
+			.toc .depth-4 {
+				padding-left: 1.2rem;
+			}
+
+			@media (max-width: 1460px) {
+				main {
+					grid-template-columns: minmax(0, 1080px);
+				}
+
+				.toc {
+					display: none;
+				}
 			}
 		</style>
 	</head>
@@ -59,27 +243,76 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 		<Header />
 		<main>
 			<article>
-				<div class="hero-image">
-					{heroImage && <Image width={1020} height={510} src={heroImage} alt="" />}
-				</div>
-				<div class="prose">
-					<div class="title">
-						<div class="date">
-							<FormattedDate date={pubDate} />
-							{
-								updatedDate && (
-									<div class="last-updated-on">
-										Last updated on <FormattedDate date={updatedDate} />
-									</div>
-								)
-							}
-						</div>
-						<h1>{title}</h1>
-						<hr />
+				{heroImage && <div class="cover"><Image width={1200} height={675} src={heroImage} alt={title} /></div>}
+
+				<header class="article-head">
+					<div class="head-meta">
+						<a class="chip chip-accent" href={withBase(`/categories/${encodeURIComponent(category)}/`)}>#{category}</a>
+						<span class="date"><FormattedDate date={pubDate} /></span>
+						{updatedDate && <span class="date">(수정 <FormattedDate date={updatedDate} />)</span>}
 					</div>
+					<h1>{title}</h1>
+					<p>{description}</p>
+
+					<div class="tag-row">
+						{tags.map((tag) => <a class="chip" href={withBase(`/tags/${encodeURIComponent(tag)}/`)}>#{tag}</a>)}
+					</div>
+				</header>
+
+				<section class="body">
 					<slot />
-				</div>
+
+					{
+						series && (
+							<section class="series-box">
+								<h3>시리즈</h3>
+								<a class="chip" href={withBase(`/series/${series.id}/`)}>{series.id}</a>
+								<div class="series-nav">
+									{
+										previousInSeries ? (
+											<a class="series-nav-card" href={withBase(`/blog/${previousInSeries.id}/`)}>
+												<span class="series-nav-label">이전 글</span>
+												<span class="series-nav-title">← {previousInSeries.data.title}</span>
+											</a>
+										) : (
+											<span class="series-nav-card is-empty">
+												<span class="series-nav-label">이전 글</span>
+												<span class="series-nav-title">첫 번째 글입니다</span>
+											</span>
+										)
+									}
+									{
+										nextInSeries ? (
+											<a class="series-nav-card series-nav-next" href={withBase(`/blog/${nextInSeries.id}/`)}>
+												<span class="series-nav-label">다음 글</span>
+												<span class="series-nav-title">{nextInSeries.data.title} →</span>
+											</a>
+										) : (
+											<span class="series-nav-card series-nav-next is-empty">
+												<span class="series-nav-label">다음 글</span>
+												<span class="series-nav-title">마지막 글입니다</span>
+											</span>
+										)
+									}
+								</div>
+							</section>
+						)
+					}
+				</section>
+
+				<Comments />
 			</article>
+
+			{
+				tocHeadings.length > 0 && (
+					<aside class="toc" aria-label="Table of contents">
+						<h3>목차</h3>
+						<ul>
+							{tocHeadings.map((item) => <li><a class={`depth-${item.depth}`} href={`#${item.slug}`}>{item.text}</a></li>)}
+						</ul>
+					</aside>
+				)
+			}
 		</main>
 		<Footer />
 	</body>

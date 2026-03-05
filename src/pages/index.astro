@@ -1,49 +1,892 @@
 ---
+import { Image } from 'astro:assets';
+import { getCollection } from 'astro:content';
 import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import { getPublishedPosts } from '../utils/blog';
+import { withBase } from '../utils/path';
+
+const [posts, seriesEntries] = await Promise.all([getPublishedPosts(), getCollection('series')]);
+const featuredPosts = posts.slice(0, 3);
+const listPosts = posts;
+
+const seriesItems = seriesEntries
+	.map((series) => ({
+		id: series.id,
+		title: series.data.title,
+		description: series.data.description,
+		count: listPosts.filter((post) => post.data.series?.id === series.id).length,
+	}))
+	.filter((series) => series.count > 0)
+	.sort((a, b) => b.count - a.count || a.title.localeCompare(b.title, 'ko'));
+
+const pageSize = 5;
+const totalPages = Math.max(1, Math.ceil(listPosts.length / pageSize));
+const visiblePages = Array.from({ length: Math.min(totalPages, 5) }, (_, index) => index + 1);
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="ko">
 	<head>
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+		<style>
+			:root {
+				--home-nav-height: 74px;
+			}
+
+			:global(body.home-page) {
+				overflow-x: hidden;
+				background: rgb(255, 255, 255);
+			}
+
+			:global(body.home-page main) {
+				padding-top: 0;
+			}
+
+			:global(body.home-page header) {
+				position: fixed !important;
+				inset: 0 0 auto 0;
+				background: transparent !important;
+				border-bottom: none !important;
+				backdrop-filter: none !important;
+				box-shadow: none !important;
+				z-index: 60;
+				transition: background-color 180ms ease, border-color 180ms ease, backdrop-filter 180ms ease;
+			}
+
+			:global(body.home-page.nav-dark header) {
+				background: rgba(255, 255, 255, 88%) !important;
+				border-bottom: 1px solid rgba(18, 24, 38, 12%) !important;
+				backdrop-filter: blur(9px) !important;
+			}
+
+			:global(body.home-page header .inner) {
+				background: transparent !important;
+				border: none !important;
+				border-radius: 0 !important;
+				margin-top: 0 !important;
+				padding: 0.75rem 0 !important;
+			}
+
+			.hero {
+				position: relative;
+				overflow: hidden;
+				width: 100vw;
+				margin-left: calc(50% - 50vw);
+				margin-top: 0;
+				padding: calc(2.6rem + var(--home-nav-height)) 0 2.6rem;
+				border-top: 1px solid rgba(77, 112, 192, 14%);
+				border-bottom: 1px solid rgba(77, 112, 192, 14%);
+				border-left: none;
+				border-right: none;
+				background: rgb(248, 250, 255);
+				margin-bottom: 2rem;
+				color: rgb(6, 11, 17);
+			}
+
+			.hero-inner {
+				width: min(1280px, calc(100% - 2rem));
+				margin: 0 auto;
+			}
+
+			.hero-bg {
+				position: absolute;
+				inset: 0;
+				pointer-events: none;
+				z-index: 0;
+			}
+
+			.hero-bg-desktop,
+			.hero-bg-mobile {
+				position: absolute;
+				inset: 0;
+			}
+
+			.hero-bg-desktop {
+				opacity: 1;
+				background:
+					radial-gradient(1200px 460px at 100% -10%, rgba(41, 112, 255, 30%) 0%, rgba(41, 112, 255, 0%) 70%),
+					radial-gradient(900px 380px at 72% 100%, rgba(28, 74, 196, 18%) 0%, rgba(28, 74, 196, 0%) 70%),
+					radial-gradient(700px 320px at 20% 0%, rgba(124, 180, 255, 16%) 0%, rgba(124, 180, 255, 0%) 68%),
+					repeating-linear-gradient(140deg, rgba(48, 110, 255, 6%) 0 2px, rgba(48, 110, 255, 0%) 2px 22px),
+					linear-gradient(105deg, rgba(236, 244, 255, 78%) 0%, rgba(245, 248, 255, 40%) 42%, rgba(255, 255, 255, 0%) 100%);
+				transform: translate3d(0, calc(var(--hero-parallax, 0px) * 0.35), 0);
+				will-change: transform;
+				animation: heroWave 22s ease-in-out infinite alternate;
+			}
+
+			.hero-bg-mobile {
+				opacity: 0;
+				background:
+					radial-gradient(420px 240px at 110% -5%, rgba(41, 112, 255, 36%) 0%, rgba(41, 112, 255, 0%) 70%),
+					radial-gradient(380px 200px at -5% 95%, rgba(28, 74, 196, 19%) 0%, rgba(28, 74, 196, 0%) 72%),
+					repeating-linear-gradient(145deg, rgba(48, 110, 255, 7%) 0 1.5px, rgba(48, 110, 255, 0%) 1.5px 18px),
+					linear-gradient(140deg, rgba(233, 244, 255, 65%) 0%, rgba(255, 255, 255, 8%) 100%);
+				transform: translate3d(0, calc(var(--hero-parallax, 0px) * 0.2), 0);
+				will-change: transform;
+				animation: heroFloat 18s ease-in-out infinite;
+			}
+
+			.hero p {
+				color: rgba(6, 11, 17, 0.72);
+				max-width: 52ch;
+			}
+
+			.hero > *:not(.hero-bg) {
+				position: relative;
+				z-index: 1;
+			}
+
+			.search {
+				margin-top: 1.1rem;
+				position: relative;
+				max-width: 760px;
+			}
+
+			.search-row {
+				display: flex;
+				align-items: center;
+				gap: 0.6rem;
+			}
+
+			.search input {
+				flex: 1;
+				border: 1px solid rgb(229, 232, 235);
+				background: rgb(255, 255, 255);
+				border-radius: 999px;
+				padding: 0.65rem 0.95rem;
+				font-size: 0.88rem;
+				color: rgb(25, 31, 40);
+			}
+
+			.search-tools {
+				display: flex;
+				align-items: flex-start;
+				gap: 0.8rem;
+				margin-top: 0.7rem;
+				flex-wrap: wrap;
+			}
+
+			.search-scope {
+				display: flex;
+				gap: 0.45rem;
+				flex-wrap: wrap;
+			}
+
+			.scope-chip {
+				border: 1px solid rgb(233, 236, 240);
+				background: rgb(246, 247, 249);
+				border-radius: 999px;
+				padding: 0.24rem 0.58rem;
+				font-size: 0.74rem;
+				font-weight: 600;
+				color: rgba(6, 11, 17, 0.48);
+				cursor: pointer;
+			}
+
+			.scope-chip.active {
+				background: rgba(49, 130, 246, 8%);
+				border-color: rgba(49, 130, 246, 20%);
+				color: rgb(43, 99, 194);
+			}
+
+			.search-status {
+				margin: 0;
+				font-size: 0.82rem;
+				color: rgba(6, 11, 17, 0.48);
+			}
+
+			.search-actions {
+				display: inline-flex;
+				align-items: center;
+				gap: 0.5rem;
+				white-space: nowrap;
+			}
+
+			.search-reset {
+				border: 1px solid rgb(233, 236, 240);
+				background: rgb(246, 247, 249);
+				border-radius: 999px;
+				padding: 0.24rem 0.58rem;
+				font-size: 0.74rem;
+				font-weight: 600;
+				color: rgba(6, 11, 17, 0.48);
+				cursor: pointer;
+			}
+
+			.section {
+				margin-top: 2rem;
+			}
+
+			.section > h2 {
+				margin-bottom: 0.95rem;
+				color: rgba(6, 11, 17, 0.48);
+				font-weight: 600;
+			}
+
+			.recent-grid {
+				display: grid;
+				grid-template-columns: repeat(3, minmax(0, 1fr));
+				gap: 1rem;
+			}
+
+			.recent-card {
+				display: block;
+				text-decoration: none;
+			}
+
+			.recent-thumb {
+				display: block;
+				overflow: hidden;
+				border-radius: var(--radius-md);
+				margin-bottom: 0.7rem;
+			}
+
+			.recent-thumb :global(img) {
+				width: 100%;
+				height: auto;
+				aspect-ratio: 16 / 9;
+				object-fit: cover;
+			}
+
+			.recent-title {
+				display: block;
+				font-size: 1rem;
+				font-weight: 700;
+				line-height: 1.35;
+				margin-bottom: 0.35rem;
+				color: rgba(6, 11, 17, 0.8);
+			}
+
+			.recent-meta {
+				font-size: 0.8rem;
+				color: rgba(6, 11, 17, 0.48);
+			}
+
+			.all-layout {
+				display: grid;
+				grid-template-columns: minmax(0, 1fr) 280px;
+				gap: 1.2rem;
+			}
+
+			.post-list {
+				display: grid;
+				gap: 0.9rem;
+			}
+
+			.list-card {
+				display: grid;
+				grid-template-columns: 220px 1fr;
+				gap: 0.9rem;
+				padding: 0.9rem;
+				border: 1px solid rgb(var(--line));
+				background: rgb(var(--surface));
+				border-radius: var(--radius-md);
+				text-decoration: none;
+			}
+
+			.list-thumb {
+				overflow: hidden;
+				border-radius: 10px;
+				background: rgb(var(--surface-strong));
+			}
+
+			.list-thumb :global(img) {
+				width: 100%;
+				height: auto;
+				aspect-ratio: 16/10;
+				object-fit: cover;
+			}
+
+			.list-title {
+				font-size: 1rem;
+				font-weight: 700;
+				line-height: 1.35;
+				margin-bottom: 0.45rem;
+				color: rgba(6, 11, 17, 0.8);
+			}
+
+			.list-desc {
+				font-size: 0.87rem;
+				color: rgba(6, 11, 17, 0.48);
+				margin-bottom: 0.45rem;
+				display: -webkit-box;
+				-webkit-line-clamp: 2;
+				-webkit-box-orient: vertical;
+				overflow: hidden;
+			}
+
+			.list-date {
+				font-size: 0.78rem;
+				color: rgba(6, 11, 17, 0.48);
+			}
+
+			.empty-search {
+				display: none;
+				padding: 1rem;
+				border: 1px dashed rgb(var(--line));
+				border-radius: var(--radius-md);
+				background: rgb(var(--surface));
+				color: rgb(var(--muted));
+				font-size: 0.9rem;
+				text-align: center;
+			}
+
+			.tag-panel {
+				border: 1px solid rgb(var(--line));
+				background: rgb(var(--surface));
+				border-radius: var(--radius-md);
+				padding: 1rem;
+				height: fit-content;
+				position: sticky;
+				top: 92px;
+			}
+
+			.tag-panel h3 {
+				font-size: 0.95rem;
+				margin-bottom: 0.7rem;
+			}
+
+			.panel-tabs {
+				display: grid;
+				grid-template-columns: repeat(2, minmax(0, 1fr));
+				gap: 0.45rem;
+				margin-bottom: 0.75rem;
+			}
+
+			.panel-tab {
+				border: 1px solid rgb(233, 236, 240);
+				background: rgb(246, 247, 249);
+				border-radius: 999px;
+				padding: 0.24rem 0.58rem;
+				font-size: 0.74rem;
+				font-weight: 600;
+				color: rgba(6, 11, 17, 0.48);
+				cursor: pointer;
+			}
+
+			.panel-tab.active {
+				background: rgba(49, 130, 246, 8%);
+				border-color: rgba(49, 130, 246, 20%);
+				color: rgb(43, 99, 194);
+			}
+
+			.panel-body[hidden] {
+				display: none;
+			}
+
+			.panel-body {
+				min-width: 0;
+			}
+
+			.tag-cloud {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 0.45rem;
+			}
+
+			.series-list {
+				display: grid;
+				gap: 0.5rem;
+				min-width: 0;
+				width: 100%;
+			}
+
+			.series-link {
+				display: block;
+				text-decoration: none;
+				border: 1px solid rgb(var(--line));
+				background: rgb(var(--surface));
+				border-radius: 12px;
+				padding: 0.55rem 0.65rem;
+				width: 100%;
+				max-width: 100%;
+				overflow: hidden;
+			}
+
+			.series-link strong {
+				display: block;
+				font-size: 0.84rem;
+				line-height: 1.3;
+				margin-bottom: 0.18rem;
+			}
+
+			.series-link .series-desc {
+				display: block;
+				font-size: 0.74rem;
+				color: rgba(6, 11, 17, 0.48);
+				line-height: 1.35;
+				margin-bottom: 0.24rem;
+				overflow: hidden;
+				display: -webkit-box;
+				-webkit-line-clamp: 2;
+				-webkit-box-orient: vertical;
+			}
+
+			.series-link .series-count {
+				display: block;
+				font-size: 0.72rem;
+				color: rgba(6, 11, 17, 0.48);
+			}
+
+			.pagination {
+				display: flex;
+				align-items: center;
+				gap: 0.35rem;
+				margin-top: 0.9rem;
+			}
+
+			.page {
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				min-width: 30px;
+				height: 30px;
+				padding: 0 0.4rem;
+				border-radius: 8px;
+				font-size: 0.82rem;
+				text-decoration: none;
+				border: 1px solid rgb(var(--line));
+				background: rgb(var(--surface));
+			}
+
+			.page.active {
+				background: rgba(49, 130, 246, 8%);
+				border-color: rgba(49, 130, 246, 20%);
+				color: rgb(43, 99, 194);
+				font-weight: 600;
+			}
+
+			@media (max-width: 1100px) {
+				.all-layout {
+					grid-template-columns: 1fr;
+				}
+
+				.tag-panel {
+					position: static;
+				}
+			}
+
+			@media (max-width: 900px) {
+				:root {
+					--home-nav-height: 112px;
+				}
+
+				:global(body.home-page header .inner) {
+					padding: 0.6rem 0 !important;
+				}
+
+				.recent-grid {
+					grid-template-columns: 1fr;
+				}
+
+				.list-card {
+					grid-template-columns: 1fr;
+				}
+
+				.search-row {
+					flex-direction: column;
+					align-items: stretch;
+				}
+
+				.search-actions {
+					justify-content: space-between;
+				}
+
+				.hero-bg-desktop {
+					opacity: 0;
+				}
+
+				.hero-bg-mobile {
+					opacity: 1;
+				}
+			}
+
+			@keyframes heroWave {
+				0% {
+					transform: translate3d(0, 0, 0) scale(1);
+				}
+				100% {
+					transform: translate3d(0, -8px, 0) scale(1.015);
+				}
+			}
+
+			@keyframes heroFloat {
+				0%,
+				100% {
+					transform: translate3d(0, 0, 0);
+				}
+				50% {
+					transform: translate3d(0, -10px, 0);
+				}
+			}
+
+			@media (prefers-reduced-motion: reduce) {
+				.hero-bg-desktop,
+				.hero-bg-mobile {
+					animation: none;
+					transform: none;
+				}
+			}
+		</style>
 	</head>
-	<body>
+	<body class="home-page">
 		<Header />
 		<main>
-			<h1>🧑‍🚀 Hello, Astronaut!</h1>
-			<p>
-				Welcome to the official <a href="https://astro.build/">Astro</a> blog starter template. This template
-				serves as a lightweight, minimally-styled starting point for anyone looking to build a personal
-				website, blog, or portfolio with Astro.
-			</p>
-			<p>
-				This template comes with a few integrations already configured in your
-				<code>astro.config.mjs</code> file. You can customize your setup with
-				<a href="https://astro.build/integrations">Astro Integrations</a> to add tools like Tailwind,
-				React, or Vue to your project.
-			</p>
-			<p>Here are a few ideas on how to get started with the template:</p>
-			<ul>
-				<li>Edit this page in <code>src/pages/index.astro</code></li>
-				<li>Edit the site header items in <code>src/components/Header.astro</code></li>
-				<li>Add your name to the footer in <code>src/components/Footer.astro</code></li>
-				<li>Check out the included blog posts in <code>src/content/blog/</code></li>
-				<li>Customize the blog post page layout in <code>src/layouts/BlogPost.astro</code></li>
-			</ul>
-			<p>
-				Have fun! If you get stuck, remember to
-				<a href="https://docs.astro.build/">read the docs</a>
-				or <a href="https://astro.build/chat">join us on Discord</a> to ask questions.
-			</p>
-			<p>
-				Looking for a blog template with a bit more personality? Check out
-				<a href="https://github.com/Charca/astro-blog-template">astro-blog-template</a>
-				by <a href="https://twitter.com/Charca">Maxi Ferreira</a>.
-			</p>
+			<section class="hero">
+				<div class="hero-bg" aria-hidden="true">
+					<div class="hero-bg-desktop"></div>
+					<div class="hero-bg-mobile"></div>
+				</div>
+
+				<div class="hero-inner">
+					<h1>Tech Log</h1>
+					<p>카카오페이 스타일의 기술 블로그 구조를 참고해, 기술 경험과 노하우를 공유합니다.</p>
+					<div class="search">
+						<div class="search-row">
+							<input id="post-search" type="search" placeholder="제목이나 설명으로 글 검색" />
+							<div class="search-actions">
+								<p class="search-status" id="search-status">{listPosts.length}개 글</p>
+								<button id="search-reset" class="search-reset" type="button">초기화</button>
+							</div>
+						</div>
+					</div>
+					<div class="search-tools">
+						<div class="search-scope" role="group" aria-label="검색 범위">
+							<button class="scope-chip active" type="button" data-scope="text" aria-pressed="true">제목/요약</button>
+							<button class="scope-chip active" type="button" data-scope="tags" aria-pressed="true">태그</button>
+							<button class="scope-chip active" type="button" data-scope="category" aria-pressed="true">카테고리</button>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<section class="section">
+				<h2>최근 올라온 글</h2>
+				<div class="recent-grid" id="recent-grid">
+					{
+						featuredPosts.map((post) => (
+							<a
+								class="recent-card"
+								href={withBase(`/blog/${post.id}/`)}
+								data-filter-item
+								data-title={post.data.title}
+								data-description={post.data.description}
+								data-tags={post.data.tags.join(' ')}
+								data-category={post.data.category}
+							>
+								<span class="recent-thumb">
+									{post.data.heroImage && <Image width={720} height={405} src={post.data.heroImage} alt={post.data.title} />}
+								</span>
+								<strong class="recent-title">{post.data.title}</strong>
+								<span class="recent-meta">
+									{post.data.pubDate.toLocaleDateString('ko-KR')} · {post.data.category}
+								</span>
+							</a>
+						))
+					}
+				</div>
+			</section>
+
+			<section class="section">
+				<h2>전체 게시글</h2>
+				<div class="all-layout">
+					<div>
+						<div class="post-list" id="post-list">
+							{
+								listPosts.map((post) => (
+									<a
+										class="list-card"
+										href={withBase(`/blog/${post.id}/`)}
+										data-filter-item
+										data-list-item
+										data-title={post.data.title}
+										data-description={post.data.description}
+										data-tags={post.data.tags.join(' ')}
+										data-category={post.data.category}
+									>
+										<span class="list-thumb">
+											{post.data.heroImage && <Image width={520} height={320} src={post.data.heroImage} alt={post.data.title} />}
+										</span>
+										<span>
+											<strong class="list-title">{post.data.title}</strong>
+											<span class="list-desc">{post.data.description}</span>
+											<span class="list-date">{post.data.pubDate.toLocaleDateString('ko-KR')}</span>
+										</span>
+									</a>
+								))
+							}
+						</div>
+						<p class="empty-search" id="empty-search">검색 결과가 없습니다. 다른 키워드나 범위를 선택해보세요.</p>
+
+						<div class="pagination">
+							<span class="page active">1</span>
+							{visiblePages.slice(1).map((page) => <span class="page">{page}</span>)}
+							{totalPages > 5 && <span class="page">…</span>}
+						</div>
+					</div>
+
+					<aside class="tag-panel">
+						<div class="panel-tabs" role="tablist" aria-label="사이드 패널 전환">
+							<button class="panel-tab active" type="button" data-panel-tab="tags" role="tab" aria-selected="true">Tag</button>
+							<button class="panel-tab" type="button" data-panel-tab="series" role="tab" aria-selected="false">Series</button>
+						</div>
+
+						<div data-panel-body="tags" role="tabpanel">
+							<h3>Tag</h3>
+							<div class="tag-cloud">
+								{
+									Array.from(new Set(posts.flatMap((post) => post.data.tags))).slice(0, 18).map((tag) => (
+										<a class="chip" href={withBase(`/tags/${encodeURIComponent(tag)}/`)}>#{tag}</a>
+									))
+								}
+							</div>
+						</div>
+
+						<div data-panel-body="series" role="tabpanel" hidden>
+							<h3>Series</h3>
+							<div class="series-list">
+							{
+								seriesItems.map((series) => (
+									<a class="series-link" href={withBase(`/series/${series.id}/`)}>
+										<strong>{series.title}</strong>
+										<span class="series-desc">{series.description}</span>
+										<span class="series-count">{series.count}개 글</span>
+									</a>
+								))
+							}
+							</div>
+						</div>
+					</aside>
+				</div>
+			</section>
 		</main>
 		<Footer />
+
+		<script is:inline>
+			(() => {
+				const body = document.body;
+				const heroSection = document.querySelector('.hero');
+				if (heroSection) {
+					const observer = new IntersectionObserver(
+						(entries) => {
+							const entry = entries[0];
+							const shouldDark = !entry.isIntersecting || entry.intersectionRatio < 0.16;
+							body.classList.toggle('nav-dark', shouldDark);
+						},
+						{ threshold: [0, 0.16], rootMargin: '-74px 0px 0px 0px' },
+					);
+					observer.observe(heroSection);
+				}
+
+				const searchInput = document.getElementById('post-search');
+				const resetButton = document.getElementById('search-reset');
+				const scopeButtons = Array.from(document.querySelectorAll('[data-scope]'));
+				const panelTabs = Array.from(document.querySelectorAll('[data-panel-tab]'));
+				const panelBodies = Array.from(document.querySelectorAll('[data-panel-body]'));
+				const targets = Array.from(document.querySelectorAll('[data-filter-item]'));
+				const listTargets = Array.from(document.querySelectorAll('[data-list-item]'));
+				const searchStatus = document.getElementById('search-status');
+				const emptySearch = document.getElementById('empty-search');
+				if (!searchInput || !searchStatus || !emptySearch || !resetButton) {
+					return;
+				}
+
+				const scopeOrder = ['text', 'tags', 'category'];
+				const enabledScopes = new Set(['text', 'tags', 'category']);
+
+				const setStateFromParams = (params) => {
+					enabledScopes.clear();
+					scopeOrder.forEach((item) => enabledScopes.add(item));
+
+					const q = params.get('q');
+					searchInput.value = q ?? '';
+
+					const scope = params.get('scope');
+					if (!scope) {
+						return;
+					}
+
+					enabledScopes.clear();
+					scope
+						.split(',')
+						.map((item) => item.trim())
+						.filter(Boolean)
+						.forEach((item) => {
+							if (scopeOrder.includes(item)) {
+								enabledScopes.add(item);
+							}
+						});
+
+					if (enabledScopes.size === 0) {
+						scopeOrder.forEach((item) => enabledScopes.add(item));
+					}
+				};
+
+				const syncQuery = () => {
+					const params = new URLSearchParams(window.location.search);
+					const keyword = searchInput.value.trim();
+					if (keyword) {
+						params.set('q', keyword);
+					} else {
+						params.delete('q');
+					}
+
+					const activeScopes = scopeOrder.filter((item) => enabledScopes.has(item));
+					if (activeScopes.length === scopeOrder.length) {
+						params.delete('scope');
+					} else {
+						params.set('scope', activeScopes.join(','));
+					}
+
+					const nextQuery = params.toString();
+					const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ''}${window.location.hash}`;
+					window.history.replaceState({}, '', nextUrl);
+				};
+
+				const setScopeVisual = () => {
+					scopeButtons.forEach((button) => {
+						const scope = button.getAttribute('data-scope');
+						const isEnabled = scope ? enabledScopes.has(scope) : false;
+						button.classList.toggle('active', isEnabled);
+						button.setAttribute('aria-pressed', isEnabled ? 'true' : 'false');
+					});
+				};
+
+				const includesKeyword = (source, keyword) => source.toLowerCase().includes(keyword);
+
+				const evaluate = (shouldSyncQuery = true) => {
+					const keyword = searchInput.value.trim().toLowerCase();
+					targets.forEach((element) => {
+						const title = element.getAttribute('data-title') ?? '';
+						const description = element.getAttribute('data-description') ?? '';
+						const tags = element.getAttribute('data-tags') ?? '';
+						const category = element.getAttribute('data-category') ?? '';
+
+						const searchPool = [];
+						if (enabledScopes.has('text')) {
+							searchPool.push(`${title} ${description}`);
+						}
+						if (enabledScopes.has('tags')) {
+							searchPool.push(tags);
+						}
+						if (enabledScopes.has('category')) {
+							searchPool.push(category);
+						}
+
+						const visible = keyword === '' || searchPool.some((entry) => includesKeyword(entry, keyword));
+						element.style.display = visible ? '' : 'none';
+					});
+
+					const visibleListCount = listTargets.filter((item) => item.style.display !== 'none').length;
+					emptySearch.style.display = visibleListCount === 0 ? 'block' : 'none';
+					searchStatus.textContent = `${visibleListCount}개 글`;
+					if (shouldSyncQuery) {
+						syncQuery();
+					}
+				};
+
+				panelTabs.forEach((button) => {
+					button.addEventListener('click', () => {
+						const target = button.getAttribute('data-panel-tab');
+						if (!target) {
+							return;
+						}
+
+						panelTabs.forEach((tab) => {
+							const isActive = tab === button;
+							tab.classList.toggle('active', isActive);
+							tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
+						});
+
+						panelBodies.forEach((panel) => {
+							panel.hidden = panel.getAttribute('data-panel-body') !== target;
+						});
+					});
+				});
+
+				scopeButtons.forEach((button) => {
+					button.addEventListener('click', () => {
+						const scope = button.getAttribute('data-scope');
+						if (!scope) {
+							return;
+						}
+
+						if (enabledScopes.has(scope)) {
+							if (enabledScopes.size === 1) {
+								return;
+							}
+							enabledScopes.delete(scope);
+						} else {
+							enabledScopes.add(scope);
+						}
+
+						setScopeVisual();
+						evaluate();
+					});
+				});
+
+				searchInput.addEventListener('input', evaluate);
+
+				resetButton.addEventListener('click', () => {
+					searchInput.value = '';
+					enabledScopes.clear();
+					scopeOrder.forEach((item) => enabledScopes.add(item));
+					setScopeVisual();
+					evaluate();
+				});
+
+				window.addEventListener('popstate', () => {
+					const params = new URLSearchParams(window.location.search);
+					setStateFromParams(params);
+					setScopeVisual();
+					evaluate(false);
+				});
+
+				setStateFromParams(new URLSearchParams(window.location.search));
+				setScopeVisual();
+				evaluate();
+			})();
+		</script>
+
+		<script is:inline>
+			(() => {
+				const hero = document.querySelector('.hero');
+				if (!hero) {
+					return;
+				}
+
+				const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+				const isNarrow = window.matchMedia('(max-width: 900px)').matches;
+				if (prefersReducedMotion || isNarrow) {
+					hero.style.setProperty('--hero-parallax', '0px');
+					return;
+				}
+
+				let ticking = false;
+				const update = () => {
+					const rect = hero.getBoundingClientRect();
+					const viewportMid = window.innerHeight * 0.5;
+					const heroMid = rect.top + rect.height * 0.5;
+					const distance = (viewportMid - heroMid) * 0.12;
+					const clamped = Math.max(-20, Math.min(20, distance));
+					hero.style.setProperty('--hero-parallax', `${clamped}px`);
+					ticking = false;
+				};
+
+				const onScroll = () => {
+					if (!ticking) {
+						window.requestAnimationFrame(update);
+						ticking = true;
+					}
+				};
+
+				onScroll();
+				window.addEventListener('scroll', onScroll, { passive: true });
+				window.addEventListener('resize', onScroll, { passive: true });
+			})();
+		</script>
 	</body>
 </html>

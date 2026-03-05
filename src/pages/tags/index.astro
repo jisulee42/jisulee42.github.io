@@ -1,0 +1,35 @@
+---
+import BaseHead from '../../components/BaseHead.astro';
+import Footer from '../../components/Footer.astro';
+import Header from '../../components/Header.astro';
+import { SITE_TITLE } from '../../consts';
+import { getPublishedPosts, getTagCounts } from '../../utils/blog';
+import { withBase } from '../../utils/path';
+
+const tags = [...getTagCounts(await getPublishedPosts()).entries()].sort((a, b) => b[1] - a[1]);
+---
+
+<!doctype html>
+<html lang="ko">
+	<head>
+		<BaseHead title={`태그 | ${SITE_TITLE}`} description="모든 태그를 확인하세요" />
+		<style>
+			.cloud {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 0.6rem;
+			}
+		</style>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<span class="chip chip-accent">TAGS</span>
+			<h1>태그</h1>
+			<div class="cloud">
+				{tags.map(([tag, count]) => <a class="chip" href={withBase(`/tags/${encodeURIComponent(tag)}/`)}>#{tag} ({count})</a>)}
+			</div>
+		</main>
+		<Footer />
+	</body>
+</html>

@@ -1,0 +1,68 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { getCollection } from 'astro:content';
+import BaseHead from '../../components/BaseHead.astro';
+import Footer from '../../components/Footer.astro';
+import Header from '../../components/Header.astro';
+import PostCard from '../../components/PostCard.astro';
+import { SITE_TITLE } from '../../consts';
+import { getPublishedPosts } from '../../utils/blog';
+
+export async function getStaticPaths() {
+	const [seriesEntries, allPosts] = await Promise.all([getCollection('series'), getPublishedPosts()]);
+
+	return seriesEntries.map((series) => {
+		const posts = allPosts
+			.filter((post) => post.data.series?.id === series.id)
+			.sort((a, b) => (a.data.series?.order ?? 0) - (b.data.series?.order ?? 0));
+
+		return {
+			params: { series: series.id },
+			props: { series, posts },
+		};
+	});
+}
+
+const { series, posts } = Astro.props as {
+	series: CollectionEntry<'series'>;
+	posts: CollectionEntry<'blog'>[];
+};
+---
+
+<!doctype html>
+<html lang="ko">
+	<head>
+		<BaseHead title={`${series.data.title} | ${SITE_TITLE}`} description={series.data.description} />
+		<style>
+			.grid {
+				display: grid;
+				grid-template-columns: repeat(3, minmax(0, 1fr));
+				gap: 1.2rem;
+			}
+
+			@media (max-width: 980px) {
+				.grid {
+					grid-template-columns: repeat(2, minmax(0, 1fr));
+				}
+			}
+
+			@media (max-width: 760px) {
+				.grid {
+					grid-template-columns: 1fr;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<span class="chip chip-accent">SERIES</span>
+			<h1>{series.data.title}</h1>
+			<p>{series.data.description}</p>
+			<div class="grid">
+				{posts.map((post) => <PostCard post={post} />)}
+			</div>
+		</main>
+		<Footer />
+	</body>
+</html>

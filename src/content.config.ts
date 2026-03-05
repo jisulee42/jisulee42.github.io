@@ -12,8 +12,25 @@ const blog = defineCollection({
 			// Transform string to Date object
 			pubDate: z.coerce.date(),
 			updatedDate: z.coerce.date().optional(),
+			category: z.string().default('Dev'),
+			tags: z.array(z.string()).default([]),
+			series: z
+				.object({
+					id: z.string(),
+					order: z.number().int().positive(),
+				})
+				.optional(),
+			draft: z.boolean().default(false),
 			heroImage: image().optional(),
 		}),
 });
 
-export const collections = { blog };
+const series = defineCollection({
+	loader: glob({ base: './src/content/series', pattern: '**/*.json' }),
+	schema: z.object({
+		title: z.string(),
+		description: z.string(),
+	}),
+});
+
+export const collections = { blog, series };

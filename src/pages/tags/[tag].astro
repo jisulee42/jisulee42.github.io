@@ -1,36 +1,32 @@
 ---
+import type { CollectionEntry } from 'astro:content';
 import BaseHead from '../../components/BaseHead.astro';
 import Footer from '../../components/Footer.astro';
 import Header from '../../components/Header.astro';
 import PostCard from '../../components/PostCard.astro';
-import { SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
-import { getPublishedPosts } from '../../utils/blog';
+import { SITE_TITLE } from '../../consts';
+import { getPostsByTag, getPublishedPosts, getTagCounts } from '../../utils/blog';
 
-const posts = await getPublishedPosts();
+export async function getStaticPaths() {
+	const allPosts = await getPublishedPosts();
+	return [...getTagCounts(allPosts).keys()].map((tag) => ({
+		params: { tag },
+		props: { tag, posts: getPostsByTag(allPosts, tag) },
+	}));
+}
+
+const { posts, tag } = Astro.props as { posts: CollectionEntry<'blog'>[]; tag: string };
 ---
 
 <!doctype html>
 <html lang="ko">
 	<head>
-		<BaseHead title={`포스트 | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
+		<BaseHead title={`${tag} | ${SITE_TITLE}`} description={`${tag} 태그 글 모음`} />
 		<style>
-			.heading {
-				display: flex;
-				align-items: end;
-				justify-content: space-between;
-				gap: 1rem;
-				margin-bottom: 1.2rem;
-			}
-
-			.heading p {
-				color: rgb(var(--muted));
-				margin: 0;
-			}
-
 			.grid {
 				display: grid;
 				grid-template-columns: repeat(3, minmax(0, 1fr));
-				gap: 1.35rem;
+				gap: 1.2rem;
 			}
 
 			@media (max-width: 980px) {
@@ -49,14 +45,8 @@ const posts = await getPublishedPosts();
 	<body>
 		<Header />
 		<main>
-			<div class="heading">
-				<div>
-					<span class="chip chip-accent">POSTS</span>
-					<h1>전체 포스트</h1>
-					<p>{posts.length}개의 글이 있습니다.</p>
-				</div>
-			</div>
-
+			<span class="chip chip-accent">TAG</span>
+			<h1>#{tag}</h1>
 			<div class="grid">
 				{posts.map((post) => <PostCard post={post} />)}
 			</div>

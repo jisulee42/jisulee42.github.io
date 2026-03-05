@@ -1,0 +1,102 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import { SITE_AUTHOR } from '../consts';
+import { withBase } from '../utils/path';
+
+interface Props {
+	readonly post: CollectionEntry<'blog'>;
+	readonly featured?: boolean;
+}
+
+const { post, featured = false } = Astro.props;
+---
+
+<article class:list={['post-card', { featured }]}>
+	<a class="thumbnail" href={withBase(`/blog/${post.id}/`)}>
+		{post.data.heroImage && <Image width={720} height={405} src={post.data.heroImage} alt={post.data.title} />}
+	</a>
+	<div class="content">
+		<div class="meta-top">
+			<a class="chip chip-accent" href={withBase(`/categories/${encodeURIComponent(post.data.category)}/`)}>#{post.data.category}</a>
+		</div>
+		<h3>
+			<a href={withBase(`/blog/${post.id}/`)}>{post.data.title}</a>
+		</h3>
+		<p class="description">{post.data.description}</p>
+		<div class="meta-bottom">
+			<time datetime={post.data.pubDate.toISOString()}>{post.data.pubDate.toLocaleDateString('ko-KR')}</time>
+			<span aria-hidden="true">·</span>
+			<span>{SITE_AUTHOR}</span>
+		</div>
+	</div>
+</article>
+
+<style>
+	.post-card {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	.thumbnail {
+		display: block;
+		border-radius: var(--radius-md);
+		overflow: hidden;
+		background: rgb(var(--surface-strong));
+	}
+
+	.thumbnail :global(img) {
+		width: 100%;
+		height: auto;
+		aspect-ratio: 16/9;
+		object-fit: cover;
+		transition: transform 0.28s ease;
+	}
+
+	.post-card:hover .thumbnail :global(img) {
+		transform: scale(1.02);
+	}
+
+	.meta-top {
+		margin-bottom: 0.36rem;
+	}
+
+
+	.content h3 {
+		font-size: clamp(1.08rem, 1.8vw, 1.32rem);
+		margin-bottom: 0.45rem;
+		letter-spacing: -0.01em;
+	}
+
+	.content h3 a {
+		text-decoration: none;
+	}
+
+	.description {
+		color: rgb(51, 51, 51);
+		font-size: 0.89rem;
+		margin-bottom: 0.5rem;
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+
+	.meta-bottom {
+		display: flex;
+		align-items: center;
+		gap: 0.35rem;
+		font-size: 0.78rem;
+		color: rgb(var(--muted));
+	}
+
+	.featured .content h3 {
+		font-size: clamp(1.28rem, 2.35vw, 1.76rem);
+	}
+
+	.featured .description {
+		-webkit-line-clamp: 3;
+		font-size: 0.93rem;
+	}
+</style>
