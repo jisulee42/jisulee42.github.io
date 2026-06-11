@@ -6,10 +6,22 @@ import { withBase } from '../utils/path';
 <header>
 	<div class="inner">
 		<a class="brand" href={withBase('/')}>
-			<span class="mark">T</span>
+			<span class="mark" aria-hidden="true">
+				<svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<rect x="2.5" y="2.5" width="23" height="23" rx="5.5" stroke="currentColor" stroke-opacity="0.16" stroke-width="1.1"></rect>
+					<path
+						d="M9 8.5 L9 16.5 Q9 19.5 12 19.5 L18 19.5"
+						stroke="currentColor"
+						stroke-opacity="0.9"
+						stroke-width="3.2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					></path>
+					<circle cx="19" cy="9" r="3.6" fill="#e5484d"></circle>
+				</svg>
+			</span>
 			<div>
 				<strong>기술 블로그</strong>
-				<small>Derek Engineering Notes</small>
 			</div>
 		</a>
 
@@ -57,28 +69,22 @@ import { withBase } from '../utils/path';
 	}
 
 	.mark {
-		width: 28px;
-		height: 28px;
-		border-radius: 8px;
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		font-weight: 700;
-		font-size: 0.9rem;
-		background: rgb(var(--accent));
-		color: rgb(var(--accent-text));
+		color: rgb(var(--text));
+	}
+
+	.mark svg {
+		width: 30px;
+		height: 30px;
+		display: block;
 	}
 
 	.brand strong {
 		display: block;
 		font-size: 0.98rem;
 		line-height: 1.1;
-	}
-
-	.brand small {
-		display: block;
-		font-size: 0.73rem;
-		color: rgb(var(--muted));
 	}
 
 	nav {
@@ -91,10 +97,6 @@ import { withBase } from '../utils/path';
 		.inner {
 			flex-direction: row;
 			align-items: center;
-		}
-
-		.brand small {
-			display: none;
 		}
 
 		.controls {

@@ -5,7 +5,7 @@
 	--text: 6, 11, 17;
 	--muted: 6, 11, 17;
 	--line: 229, 232, 235;
-	--accent: 49, 130, 246;
+	--accent: 229, 72, 77;
 	--accent-text: 255, 255, 255;
 	--black: 15, 18, 25;
 	--radius-sm: 8px;
@@ -131,9 +131,9 @@ hr {
 }
 
 .chip-accent {
-	background: rgba(49, 130, 246, 8%);
-	border-color: rgba(49, 130, 246, 20%);
-	color: rgb(43, 99, 194);
+	background: rgba(var(--accent), 0.08);
+	border-color: rgba(var(--accent), 0.2);
+	color: rgb(var(--accent));
 	font-weight: 600;
 }
 

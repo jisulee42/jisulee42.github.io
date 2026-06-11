@@ -1,0 +1,90 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import { getCategoryStyle } from '../utils/category';
+
+interface Props {
+	readonly post: CollectionEntry<'blog'>;
+	readonly showTitle?: boolean;
+}
+
+const { post, showTitle = true } = Astro.props;
+const style = getCategoryStyle(post.data.category);
+---
+
+{
+	post.data.heroImage ? (
+		<Image class="pt-img" width={720} height={450} src={post.data.heroImage} alt={post.data.title} />
+	) : (
+		<div class:list={['pt-auto', { 'pt-auto--bare': !showTitle }]} style={`--from:${style.from};--to:${style.to}`}>
+			<span class="pt-cat">{post.data.category}</span>
+			{showTitle && <span class="pt-title">{post.data.title}</span>}
+		</div>
+	)
+}
+
+<style>
+	.pt-img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+		transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+	}
+
+	.pt-auto {
+		width: 100%;
+		height: 100%;
+		transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-end;
+		gap: 0.55rem;
+		padding: 1.2rem 1.3rem;
+		background: linear-gradient(135deg, var(--from), var(--to));
+		position: relative;
+		overflow: hidden;
+	}
+
+	.pt-auto::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.2) 1px, transparent 0);
+		background-size: 18px 18px;
+		opacity: 0.5;
+	}
+
+	.pt-auto::after {
+		content: '';
+		position: absolute;
+		right: -38px;
+		top: -38px;
+		width: 150px;
+		height: 150px;
+		border-radius: 50%;
+		background: rgba(255, 255, 255, 0.12);
+	}
+
+	.pt-cat {
+		position: relative;
+		font-size: 0.72rem;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		color: rgba(255, 255, 255, 0.88);
+	}
+
+	.pt-title {
+		position: relative;
+		font-size: 1.2rem;
+		font-weight: 800;
+		line-height: 1.32;
+		letter-spacing: -0.01em;
+		color: rgb(255, 255, 255);
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+</style>
