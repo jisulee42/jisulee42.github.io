@@ -116,14 +116,8 @@ const visiblePages = Array.from({ length: Math.min(totalPages, 5) }, (_, index) 
 
 			.carousel-track {
 				display: flex;
-				transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+				transition: transform 0.75s cubic-bezier(0.45, 0, 0.25, 1);
 				will-change: transform;
-				touch-action: pan-y;
-			}
-
-			.carousel-track.dragging {
-				transition: none;
-				cursor: grabbing;
 			}
 
 			.hero-card {
@@ -135,7 +129,6 @@ const visiblePages = Array.from({ length: Math.min(totalPages, 5) }, (_, index) 
 				overflow: hidden;
 				background: rgb(255, 255, 255);
 				text-decoration: none;
-				user-select: none;
 				box-shadow: 0 6px 24px rgba(15, 23, 42, 0.06);
 				transition: box-shadow 0.25s ease;
 			}
@@ -669,9 +662,6 @@ const visiblePages = Array.from({ length: Math.min(totalPages, 5) }, (_, index) 
 				const slides = track.children.length;
 
 				let index = 0;
-				let pointerId = null;
-				let startX = 0;
-				let dragged = false;
 				let timer = 0;
 
 				const slideW = () => viewport.clientWidth;
@@ -741,68 +731,6 @@ const visiblePages = Array.from({ length: Math.min(totalPages, 5) }, (_, index) 
 						startAuto();
 					}
 				});
-
-				viewport.addEventListener('pointerdown', (e) => {
-					pointerId = e.pointerId;
-					startX = e.clientX;
-					dragged = false;
-					stopAuto();
-				});
-
-				viewport.addEventListener('pointermove', (e) => {
-					if (pointerId === null) {
-						return;
-					}
-					const dx = e.clientX - startX;
-					if (!dragged) {
-						if (Math.abs(dx) < 6) {
-							return;
-						}
-						dragged = true;
-						track.classList.add('dragging');
-						viewport.setPointerCapture(pointerId);
-					}
-					let move = dx;
-					if ((index === 0 && dx > 0) || (index === slides - 1 && dx < 0)) {
-						move = dx * 0.35;
-					}
-					track.style.transform = `translateX(${-index * slideW() + move}px)`;
-				});
-
-				const endDrag = (e) => {
-					if (pointerId === null) {
-						return;
-					}
-					const wasDragged = dragged;
-					const dx = e.clientX - startX;
-					pointerId = null;
-					track.classList.remove('dragging');
-					if (wasDragged) {
-						const threshold = slideW() * 0.18;
-						if (dx <= -threshold) {
-							go(index + 1);
-						} else if (dx >= threshold) {
-							go(index - 1);
-						} else {
-							apply();
-						}
-					}
-					restart();
-				};
-
-				viewport.addEventListener('pointerup', endDrag);
-				viewport.addEventListener('pointercancel', endDrag);
-
-				viewport.addEventListener(
-					'click',
-					(e) => {
-						if (dragged) {
-							e.preventDefault();
-							e.stopPropagation();
-						}
-					},
-					true,
-				);
 
 				window.addEventListener('resize', () => apply(false));
 

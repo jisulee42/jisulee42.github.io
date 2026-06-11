@@ -18,12 +18,17 @@ const resolvedHref = typeof href === 'string' && href.startsWith('/') ? withBase
 	a {
 		display: inline-flex;
 		align-items: center;
-		padding: 0.42rem 0.65rem;
+		justify-content: center;
+		width: 36px;
+		height: 36px;
 		border-radius: 8px;
 		text-decoration: none;
-		font-size: 0.88rem;
-		font-weight: 700;
 		color: rgb(var(--muted));
+		transition: background 0.15s ease, color 0.15s ease;
+	}
+	a:hover {
+		background: rgb(var(--surface-strong));
+		color: rgb(var(--text));
 	}
 	a.active {
 		background: rgb(var(--surface-strong));
