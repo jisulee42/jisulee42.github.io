@@ -16,8 +16,35 @@ const total = allPosts.length;
 	<head>
 		<BaseHead title={`Categories | ${SITE_TITLE}`} description="Browse all categories" />
 		<style>
-			.heading {
-				margin-bottom: 2rem;
+			.hero {
+				border-top: 1px solid rgb(var(--line));
+				border-bottom: 1px solid rgb(var(--line));
+				background: rgb(238, 240, 244);
+				overflow: hidden;
+				position: relative;
+			}
+
+			.hero-inner {
+				width: min(1280px, calc(100% - 2rem));
+				margin: 0 auto;
+				padding: 3rem 0 2.6rem;
+				position: relative;
+				z-index: 1;
+			}
+
+			.hero-deco {
+				position: absolute;
+				right: -0.5rem;
+				top: 50%;
+				transform: translateY(-50%);
+				font-size: clamp(7rem, 14vw, 12rem);
+				font-weight: 800;
+				letter-spacing: -0.04em;
+				color: rgba(var(--text), 0.04);
+				font-style: italic;
+				line-height: 1;
+				user-select: none;
+				pointer-events: none;
 			}
 
 			.crumb {
@@ -31,18 +58,44 @@ const total = allPosts.length;
 				color: rgba(var(--muted), 0.4);
 			}
 
-			.heading p {
+			.hero h1 {
+				margin: 0.45rem 0 0.6rem;
+				font-size: clamp(2rem, 3.5vw, 2.8rem);
+				letter-spacing: -0.02em;
+				display: block;
+				width: fit-content;
+				position: relative;
+			}
+
+			.hero h1::after {
+				content: '';
+				position: absolute;
+				left: -4px;
+				right: -4px;
+				bottom: 0.06em;
+				height: 0.36em;
+				background: rgba(0, 0, 0, 0.09);
+				border-radius: 4px;
+			}
+
+			.hero p {
 				margin: 0;
 				font-family: var(--font-mono);
 				font-size: 0.82rem;
-				color: rgb(var(--muted));
-				opacity: 0.55;
+				color: rgba(var(--muted), 0.5);
 			}
 
 			.grid {
 				display: grid;
 				grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
 				gap: 1rem;
+				padding-top: 2rem;
+			}
+
+			@media (max-width: 760px) {
+				.hero-deco {
+					font-size: 6rem;
+				}
 			}
 
 			.cat-card {
@@ -103,13 +156,17 @@ const total = allPosts.length;
 	</head>
 	<body>
 		<Header />
-		<main>
-			<div class="heading">
+
+		<div class="hero">
+			<div class="hero-inner">
 				<div class="crumb" aria-hidden="true"><span class="dim">~/</span>categories</div>
 				<h1>Categories</h1>
 				<p>{categories.length} categories · {total} posts</p>
 			</div>
+			<span class="hero-deco" aria-hidden="true">Categories</span>
+		</div>
 
+		<main>
 			<div class="grid">
 				{
 					categories.map(([name, count]) => (

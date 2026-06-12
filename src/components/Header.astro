@@ -21,7 +21,7 @@ import { withBase } from '../utils/path';
 				</svg>
 			</span>
 			<div>
-				<strong>Tech Blog<span class="caret" aria-hidden="true"></span></strong>
+				<strong><span class="prompt" aria-hidden="true">~/</span>tech-blog<span class="dollar" aria-hidden="true">$</span><span class="caret" aria-hidden="true"></span></strong>
 			</div>
 		</a>
 
@@ -106,15 +106,28 @@ import { withBase } from '../utils/path';
 
 	.brand strong {
 		display: block;
-		font-size: 0.98rem;
+		font-family: var(--font-mono);
+		font-size: 0.9rem;
+		font-weight: 600;
+		letter-spacing: -0.02em;
 		line-height: 1.1;
+		color: rgb(var(--text));
+	}
+
+	.prompt {
+		color: rgba(var(--muted), 0.4);
+	}
+
+	.dollar {
+		margin-left: 0.28rem;
+		color: rgba(var(--muted), 0.5);
 	}
 
 	.caret {
 		display: inline-block;
-		width: 0.5rem;
+		width: 0.18rem;
 		height: 0.72em;
-		margin-left: 0.12rem;
+		margin-left: 0.28rem;
 		vertical-align: baseline;
 		background: rgb(var(--accent));
 		border-radius: 1px;
