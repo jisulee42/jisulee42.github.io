@@ -27,9 +27,6 @@ const seriesItems = seriesEntries
 	.filter((series) => series.count > 0)
 	.sort((a, b) => b.count - a.count || a.title.localeCompare(b.title, 'ko'));
 
-const pageSize = 5;
-const totalPages = Math.max(1, Math.ceil(listPosts.length / pageSize));
-const visiblePages = Array.from({ length: Math.min(totalPages, 5) }, (_, index) => index + 1);
 ---
 
 <!doctype html>
@@ -447,34 +444,6 @@ const visiblePages = Array.from({ length: Math.min(totalPages, 5) }, (_, index) 
 				color: rgba(6, 11, 17, 0.48);
 			}
 
-			.pagination {
-				display: flex;
-				align-items: center;
-				gap: 0.35rem;
-				margin-top: 0.9rem;
-			}
-
-			.page {
-				display: inline-flex;
-				align-items: center;
-				justify-content: center;
-				min-width: 30px;
-				height: 30px;
-				padding: 0 0.4rem;
-				border-radius: 8px;
-				font-size: 0.82rem;
-				text-decoration: none;
-				border: 1px solid rgb(var(--line));
-				background: rgb(var(--surface));
-			}
-
-			.page.active {
-				background: rgba(var(--accent), 0.08);
-				border-color: rgba(var(--accent), 0.2);
-				color: rgb(var(--accent));
-				font-weight: 600;
-			}
-
 			@media (max-width: 1100px) {
 				.all-layout {
 					grid-template-columns: 1fr;
@@ -591,12 +560,6 @@ const visiblePages = Array.from({ length: Math.min(totalPages, 5) }, (_, index) 
 									</a>
 								))
 							}
-						</div>
-
-						<div class="pagination">
-							<span class="page active">1</span>
-							{visiblePages.slice(1).map((page) => <span class="page">{page}</span>)}
-							{totalPages > 5 && <span class="page">…</span>}
 						</div>
 					</div>
 
