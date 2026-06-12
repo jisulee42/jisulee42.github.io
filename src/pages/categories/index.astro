@@ -6,28 +6,124 @@ import { SITE_TITLE } from '../../consts';
 import { getCategoryCounts, getPublishedPosts } from '../../utils/blog';
 import { withBase } from '../../utils/path';
 
-const categories = [...getCategoryCounts(await getPublishedPosts()).entries()].sort((a, b) => b[1] - a[1]);
+const allPosts = await getPublishedPosts();
+const categories = [...getCategoryCounts(allPosts).entries()].sort((a, b) => b[1] - a[1]);
+const total = allPosts.length;
 ---
 
 <!doctype html>
 <html lang="ko">
 	<head>
-		<BaseHead title={`카테고리 | ${SITE_TITLE}`} description="모든 카테고리를 확인하세요" />
+		<BaseHead title={`Categories | ${SITE_TITLE}`} description="Browse all categories" />
 		<style>
-			.cloud {
+			.heading {
+				margin-bottom: 2rem;
+			}
+
+			.crumb {
+				font-family: var(--font-mono);
+				font-size: 0.82rem;
+				font-weight: 500;
+				color: rgb(var(--accent));
+			}
+
+			.crumb .dim {
+				color: rgba(var(--muted), 0.4);
+			}
+
+			.heading p {
+				margin: 0;
+				font-family: var(--font-mono);
+				font-size: 0.82rem;
+				color: rgb(var(--muted));
+				opacity: 0.55;
+			}
+
+			.grid {
+				display: grid;
+				grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+				gap: 1rem;
+			}
+
+			.cat-card {
 				display: flex;
-				flex-wrap: wrap;
-				gap: 0.6rem;
+				flex-direction: column;
+				justify-content: space-between;
+				gap: 1.2rem;
+				padding: 1.4rem 1.5rem;
+				border: 1px solid rgb(var(--line));
+				border-radius: var(--radius-md);
+				text-decoration: none;
+				color: rgb(var(--text));
+				background: rgb(var(--surface));
+				transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+			}
+
+			.cat-card:hover {
+				border-color: rgb(var(--accent));
+				box-shadow: 0 4px 16px rgba(var(--accent), 0.1);
+				background: rgb(var(--surface-strong));
+			}
+
+			.cat-name {
+				font-size: 1.1rem;
+				font-weight: 700;
+				letter-spacing: -0.01em;
+			}
+
+			.cat-meta {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				gap: 0.5rem;
+			}
+
+			.cat-count {
+				font-family: var(--font-mono);
+				font-size: 0.72rem;
+				font-weight: 500;
+				color: rgba(var(--muted), 0.55);
+			}
+
+			.cat-bar-wrap {
+				height: 3px;
+				border-radius: 999px;
+				background: rgb(var(--line));
+				flex: 1;
+				overflow: hidden;
+			}
+
+			.cat-bar {
+				height: 100%;
+				border-radius: 999px;
+				background: rgb(var(--accent));
+				transition: width 0.3s ease;
 			}
 		</style>
 	</head>
 	<body>
 		<Header />
 		<main>
-			<span class="chip chip-accent">CATEGORIES</span>
-			<h1>카테고리</h1>
-			<div class="cloud">
-				{categories.map(([category, count]) => <a class="chip" href={withBase(`/categories/${encodeURIComponent(category)}/`)}>#{category} ({count})</a>)}
+			<div class="heading">
+				<div class="crumb" aria-hidden="true"><span class="dim">~/</span>categories</div>
+				<h1>Categories</h1>
+				<p>{categories.length} categories · {total} posts</p>
+			</div>
+
+			<div class="grid">
+				{
+					categories.map(([name, count]) => (
+						<a class="cat-card" href={withBase(`/categories/${encodeURIComponent(name)}/`)}>
+							<span class="cat-name">#{name}</span>
+							<div class="cat-meta">
+								<div class="cat-bar-wrap">
+									<div class="cat-bar" style={`width:${Math.round((count / total) * 100)}%`} />
+								</div>
+								<span class="cat-count">{count} posts</span>
+							</div>
+						</a>
+					))
+				}
 			</div>
 		</main>
 		<Footer />

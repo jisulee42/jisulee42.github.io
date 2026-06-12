@@ -39,23 +39,45 @@ const visiblePages = Array.from({ length: Math.min(totalPages, 5) }, (_, index) 
 		<style>
 			:global(body.home-page) {
 				overflow-x: hidden;
-				background-color: rgb(255, 255, 255);
-				background-image:
-					linear-gradient(rgba(15, 23, 42, 0.022) 1px, transparent 1px),
-					linear-gradient(90deg, rgba(15, 23, 42, 0.022) 1px, transparent 1px);
-				background-size: 44px 44px;
 			}
 
 			.section {
 				margin-top: 2.6rem;
 			}
 
-			.section > h2 {
-				margin-bottom: 1.15rem;
+			.section > h2,
+			.recent-head h2 {
 				color: rgb(25, 31, 40);
 				font-weight: 700;
 				font-size: 1.3rem;
 				letter-spacing: -0.02em;
+				display: block;
+				width: fit-content;
+				position: relative;
+			}
+
+			.section > h2 { margin-bottom: 1.15rem; }
+			.recent-head h2 { margin: 0; }
+
+			.section > h2::after,
+			.recent-head h2::after {
+				content: '';
+				position: absolute;
+				left: -3px;
+				right: -3px;
+				bottom: 0.05em;
+				height: 0.36em;
+				background: rgba(0, 0, 0, 0.09);
+				border-radius: 3px;
+			}
+
+			.section > h2::before,
+			.recent-head h2::before {
+				content: '#';
+				margin-right: 0.4rem;
+				font-family: var(--font-mono);
+				font-weight: 700;
+				color: rgb(var(--accent));
 			}
 
 			.recent-head {
@@ -63,14 +85,6 @@ const visiblePages = Array.from({ length: Math.min(totalPages, 5) }, (_, index) 
 				justify-content: space-between;
 				align-items: center;
 				margin-bottom: 1.15rem;
-			}
-
-			.recent-head h2 {
-				margin: 0;
-				color: rgb(25, 31, 40);
-				font-weight: 700;
-				font-size: 1.3rem;
-				letter-spacing: -0.02em;
 			}
 
 			.carousel-nav {

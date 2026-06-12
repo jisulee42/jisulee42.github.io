@@ -6,16 +6,23 @@ import Header from '../../components/Header.astro';
 import PostCard from '../../components/PostCard.astro';
 import { SITE_TITLE } from '../../consts';
 import { getCategoryCounts, getPostsByCategory, getPublishedPosts } from '../../utils/blog';
+import { withBase } from '../../utils/path';
 
 export async function getStaticPaths() {
 	const allPosts = await getPublishedPosts();
-	return [...getCategoryCounts(allPosts).keys()].map((category) => ({
+	const categories = [...getCategoryCounts(allPosts).entries()].sort((a, b) => b[1] - a[1]);
+
+	return categories.map(([category]) => ({
 		params: { category },
-		props: { category, posts: getPostsByCategory(allPosts, category) },
+		props: { category, posts: getPostsByCategory(allPosts, category), categories },
 	}));
 }
 
-const { posts, category } = Astro.props as { posts: CollectionEntry<'blog'>[]; category: string };
+const { posts, category, categories } = Astro.props as {
+	posts: CollectionEntry<'blog'>[];
+	category: string;
+	categories: [string, number][];
+};
 ---
 
 <!doctype html>
@@ -23,6 +30,82 @@ const { posts, category } = Astro.props as { posts: CollectionEntry<'blog'>[]; c
 	<head>
 		<BaseHead title={`${category} | ${SITE_TITLE}`} description={`${category} 카테고리 글 모음`} />
 		<style>
+			.hero {
+				border-top: 1px solid rgb(var(--line));
+				border-bottom: 1px solid rgb(var(--line));
+				background: rgb(238, 240, 244);
+				overflow: hidden;
+				position: relative;
+			}
+
+			.hero-inner {
+				width: min(1280px, calc(100% - 2rem));
+				margin: 0 auto;
+				padding: 3rem 0 2.6rem;
+				position: relative;
+				z-index: 1;
+			}
+
+			.hero-deco {
+				position: absolute;
+				right: -0.5rem;
+				top: 50%;
+				transform: translateY(-50%);
+				font-size: clamp(7rem, 14vw, 12rem);
+				font-weight: 800;
+				letter-spacing: -0.04em;
+				color: rgba(var(--text), 0.04);
+				font-style: italic;
+				line-height: 1;
+				user-select: none;
+				pointer-events: none;
+			}
+
+			.crumb {
+				font-family: var(--font-mono);
+				font-size: 0.82rem;
+				font-weight: 500;
+				color: rgb(var(--accent));
+			}
+
+			.crumb .dim {
+				color: rgba(var(--muted), 0.4);
+			}
+
+			.hero h1 {
+				margin: 0.45rem 0 0.6rem;
+				font-size: clamp(2rem, 3.5vw, 2.8rem);
+				letter-spacing: -0.02em;
+				display: block;
+				width: fit-content;
+				position: relative;
+			}
+
+			.hero h1::after {
+				content: '';
+				position: absolute;
+				left: -4px;
+				right: -4px;
+				bottom: 0.06em;
+				height: 0.36em;
+				background: rgba(0, 0, 0, 0.09);
+				border-radius: 4px;
+			}
+
+			.hero p {
+				margin: 0;
+				font-family: var(--font-mono);
+				font-size: 0.82rem;
+				color: rgba(var(--muted), 0.5);
+			}
+
+			.cats {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 0.6rem;
+				margin-bottom: 1.8rem;
+			}
+
 			.grid {
 				display: grid;
 				grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -39,14 +122,37 @@ const { posts, category } = Astro.props as { posts: CollectionEntry<'blog'>[]; c
 				.grid {
 					grid-template-columns: 1fr;
 				}
+
+				.hero-deco {
+					font-size: 6rem;
+					opacity: 0.5;
+				}
 			}
 		</style>
 	</head>
 	<body>
 		<Header />
+
+		<div class="hero">
+			<div class="hero-inner">
+				<div class="crumb" aria-hidden="true"><span class="dim">~/categories/</span>{category.toLowerCase()}</div>
+				<h1>#{category}</h1>
+				<p>{posts.length} posts</p>
+			</div>
+			<span class="hero-deco" aria-hidden="true">#{category}</span>
+		</div>
+
 		<main>
-			<span class="chip chip-accent">CATEGORY</span>
-			<h1>#{category}</h1>
+			<nav class="cats" aria-label="카테고리 목록" style="padding-top: 1.6rem;">
+				{
+					categories.map(([name, count]) => (
+						<a class:list={['chip', { 'chip-accent': name === category }]} href={withBase(`/categories/${encodeURIComponent(name)}/`)}>
+							#{name} ({count})
+						</a>
+					))
+				}
+			</nav>
+
 			<div class="grid">
 				{posts.map((post) => <PostCard post={post} />)}
 			</div>

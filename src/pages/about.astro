@@ -8,19 +8,106 @@ import { SITE_TITLE } from '../consts';
 <!doctype html>
 <html lang="ko">
 	<head>
-		<BaseHead title={`소개 | ${SITE_TITLE}`} description="이 블로그를 소개합니다" />
+		<BaseHead title={`About | ${SITE_TITLE}`} description="About this blog" />
+		<style>
+			.hero {
+				border-top: 1px solid rgb(var(--line));
+				border-bottom: 1px solid rgb(var(--line));
+				background: rgb(238, 240, 244);
+				overflow: hidden;
+				position: relative;
+			}
+
+			.hero-inner {
+				width: min(1280px, calc(100% - 2rem));
+				margin: 0 auto;
+				padding: 3rem 0 2.6rem;
+				min-height: 217px;
+				box-sizing: border-box;
+				position: relative;
+				z-index: 1;
+			}
+
+			.hero-deco {
+				position: absolute;
+				right: -0.5rem;
+				top: 50%;
+				transform: translateY(-50%);
+				font-size: clamp(7rem, 14vw, 12rem);
+				font-weight: 800;
+				letter-spacing: -0.04em;
+				color: rgba(var(--text), 0.04);
+				font-style: italic;
+				line-height: 1;
+				user-select: none;
+				pointer-events: none;
+			}
+
+			.crumb {
+				font-family: var(--font-mono);
+				font-size: 0.82rem;
+				font-weight: 500;
+				color: rgb(var(--accent));
+			}
+
+			.crumb .dim {
+				color: rgba(var(--muted), 0.4);
+			}
+
+			.hero h1 {
+				margin: 0.45rem 0 0;
+				font-size: clamp(2rem, 3.5vw, 2.8rem);
+				letter-spacing: -0.02em;
+				display: block;
+				width: fit-content;
+				position: relative;
+			}
+
+			.hero h1::after {
+				content: '';
+				position: absolute;
+				left: -4px;
+				right: -4px;
+				bottom: 0.06em;
+				height: 0.36em;
+				background: rgba(0, 0, 0, 0.09);
+				border-radius: 4px;
+			}
+
+			.content {
+				max-width: 680px;
+				padding-top: 2.4rem;
+			}
+
+			.content p {
+				font-size: 1rem;
+				line-height: 1.8;
+				color: rgba(var(--text), 0.8);
+			}
+
+			@media (max-width: 760px) {
+				.hero-deco {
+					font-size: 6rem;
+				}
+			}
+		</style>
 	</head>
 	<body>
 		<Header />
+
+		<div class="hero">
+			<div class="hero-inner">
+				<div class="crumb" aria-hidden="true"><span class="dim">~/</span>about</div>
+				<h1>About</h1>
+			</div>
+			<span class="hero-deco" aria-hidden="true">About</span>
+		</div>
+
 		<main>
-			<span class="chip chip-accent">ABOUT</span>
-			<h1>소개</h1>
-			<p>
-				실무 개발에서 얻은 인사이트를 기록하는 개인 기술 블로그입니다.
-			</p>
-			<p>
-				아키텍처 의사결정, 마크다운 기반 글쓰기 워크플로, GitHub Pages 운영 패턴을 중심으로 다룹니다.
-			</p>
+			<div class="content">
+				<p>실무 개발에서 얻은 인사이트를 기록하는 개인 기술 블로그입니다.</p>
+				<p>아키텍처 의사결정, 마크다운 기반 글쓰기 워크플로, GitHub Pages 운영 패턴을 중심으로 다룹니다.</p>
+			</div>
 		</main>
 		<Footer />
 	</body>

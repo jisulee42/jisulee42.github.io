@@ -23,15 +23,30 @@ const resolvedHref = typeof href === 'string' && href.startsWith('/') ? withBase
 		height: 36px;
 		border-radius: 8px;
 		text-decoration: none;
-		color: rgb(var(--muted));
-		transition: background 0.15s ease, color 0.15s ease;
+		color: rgb(var(--text));
+		transition: background 0.15s ease;
 	}
 	a:hover {
 		background: rgb(var(--surface-strong));
-		color: rgb(var(--text));
 	}
 	a.active {
 		background: rgb(var(--surface-strong));
+	}
+	a.text-link {
+		width: auto;
+		height: auto;
+		padding: 0.4rem 0.7rem;
+		font-size: 0.92rem;
+		font-weight: 500;
+		color: rgba(var(--muted), 0.7);
+	}
+	a.text-link:hover {
 		color: rgb(var(--text));
+		background: transparent;
+	}
+	a.text-link.active {
+		color: rgb(var(--text));
+		font-weight: 600;
+		background: transparent;
 	}
 </style>

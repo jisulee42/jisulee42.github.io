@@ -12,22 +12,7 @@
 	--radius-md: 12px;
 	--radius-lg: 16px;
 	--shadow: 0 10px 20px rgba(15, 23, 42, 5%);
-}
-
-@font-face {
-	font-family: 'Atkinson';
-	src: url('/fonts/atkinson-regular.woff') format('woff');
-	font-weight: 400;
-	font-style: normal;
-	font-display: swap;
-}
-
-@font-face {
-	font-family: 'Atkinson';
-	src: url('/fonts/atkinson-bold.woff') format('woff');
-	font-weight: 700;
-	font-style: normal;
-	font-display: swap;
+	--font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 * {
@@ -37,17 +22,52 @@
 body {
 	margin: 0;
 	padding: 0;
-	font-family: 'Atkinson', 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
-	background: rgb(var(--bg));
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+	font-family: 'SUIT', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif;
+	background-color: rgb(var(--bg));
+	background-image:
+		linear-gradient(rgba(15, 23, 42, 0.025) 1px, transparent 1px),
+		linear-gradient(90deg, rgba(15, 23, 42, 0.025) 1px, transparent 1px);
+	background-size: 44px 44px;
 	color: rgb(var(--text));
 	font-size: 17px;
 	line-height: 1.7;
+}
+
+::selection {
+	background: rgba(var(--accent), 0.18);
+}
+
+:focus-visible {
+	outline: 2px solid rgba(var(--accent), 0.7);
+	outline-offset: 2px;
+	border-radius: 4px;
+}
+
+::-webkit-scrollbar {
+	width: 11px;
+	height: 11px;
+}
+
+::-webkit-scrollbar-thumb {
+	background: rgba(15, 23, 42, 0.18);
+	border: 3px solid transparent;
+	background-clip: content-box;
+	border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: rgba(15, 23, 42, 0.3);
+	background-clip: content-box;
 }
 
 main {
 	width: min(1280px, calc(100% - 2rem));
 	margin: 0 auto;
 	padding: 2rem 0 4rem;
+	flex: 1 0 auto;
 }
 
 h1,
@@ -118,14 +138,15 @@ hr {
 	display: inline-flex;
 	align-items: center;
 	gap: 0.35rem;
-	padding: 0.1rem 0.46rem;
-	border-radius: 999px;
+	padding: 0.12rem 0.5rem;
+	border-radius: 6px;
 	border: 1px solid transparent;
 	background: rgb(246, 247, 249);
-	font-size: 0.71rem;
+	font-family: var(--font-mono);
+	font-size: 0.7rem;
 	font-weight: 500;
-	letter-spacing: 0;
-	line-height: 1.15;
+	letter-spacing: -0.01em;
+	line-height: 1.25;
 	color: rgba(6, 11, 17, 0.48);
 	text-decoration: none;
 }
