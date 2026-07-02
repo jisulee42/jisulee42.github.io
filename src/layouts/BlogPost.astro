@@ -47,6 +47,12 @@ const tocHeadings = headings.filter((item) => item.depth >= 2 && item.depth <= 4
 				align-items: start;
 			}
 
+			.hero {
+				width: min(720px, calc(100% - 2rem));
+				margin: 0 auto 1.8rem;
+				text-align: center;
+			}
+
 			.cover {
 				margin-bottom: 1.1rem;
 			}
@@ -62,7 +68,6 @@ const tocHeadings = headings.filter((item) => item.depth >= 2 && item.depth <= 4
 				border: 1px solid rgb(var(--line));
 				background: rgb(var(--surface));
 				border-radius: var(--radius-lg);
-				margin-bottom: 1rem;
 			}
 
 			.article-head h1 {
@@ -76,6 +81,7 @@ const tocHeadings = headings.filter((item) => item.depth >= 2 && item.depth <= 4
 			.head-meta {
 				display: flex;
 				flex-wrap: wrap;
+				justify-content: center;
 				gap: 0.5rem;
 				align-items: center;
 				margin-bottom: 0.8rem;
@@ -120,6 +126,7 @@ const tocHeadings = headings.filter((item) => item.depth >= 2 && item.depth <= 4
 				display: flex;
 				gap: 0.5rem;
 				flex-wrap: wrap;
+				justify-content: center;
 				margin-top: 1.2rem;
 			}
 
@@ -241,24 +248,27 @@ const tocHeadings = headings.filter((item) => item.depth >= 2 && item.depth <= 4
 
 	<body>
 		<Header />
+
+		<div class="hero">
+			{heroImage && <div class="cover"><Image width={1200} height={675} src={heroImage} alt={title} /></div>}
+
+			<header class="article-head">
+				<div class="head-meta">
+					<a class="chip chip-accent" href={withBase(`/categories/${encodeURIComponent(category)}/`)}>#{category}</a>
+					<span class="date"><FormattedDate date={pubDate} /></span>
+					{updatedDate && <span class="date">(수정 <FormattedDate date={updatedDate} />)</span>}
+				</div>
+				<h1>{title}</h1>
+				<p>{description}</p>
+
+				<div class="tag-row">
+					{tags.map((tag) => <a class="chip" href={withBase(`/tags/${encodeURIComponent(tag)}/`)}>#{tag}</a>)}
+				</div>
+			</header>
+		</div>
+
 		<main>
 			<article>
-				{heroImage && <div class="cover"><Image width={1200} height={675} src={heroImage} alt={title} /></div>}
-
-				<header class="article-head">
-					<div class="head-meta">
-						<a class="chip chip-accent" href={withBase(`/categories/${encodeURIComponent(category)}/`)}>#{category}</a>
-						<span class="date"><FormattedDate date={pubDate} /></span>
-						{updatedDate && <span class="date">(수정 <FormattedDate date={updatedDate} />)</span>}
-					</div>
-					<h1>{title}</h1>
-					<p>{description}</p>
-
-					<div class="tag-row">
-						{tags.map((tag) => <a class="chip" href={withBase(`/tags/${encodeURIComponent(tag)}/`)}>#{tag}</a>)}
-					</div>
-				</header>
-
 				<section class="body">
 					<slot />
 
@@ -308,7 +318,7 @@ const tocHeadings = headings.filter((item) => item.depth >= 2 && item.depth <= 4
 					<aside class="toc" aria-label="Table of contents">
 						<h3>목차</h3>
 						<ul>
-							{tocHeadings.map((item) => <li><a class={`depth-${item.depth}`} href={`#${item.slug}`}>{item.text}</a></li>)}
+							{tocHeadings.map((item) => <li><a class={`depth-${item.depth}`} href={`#${item.slug}`} data-toc-link>{item.text}</a></li>)}
 						</ul>
 					</aside>
 				)
