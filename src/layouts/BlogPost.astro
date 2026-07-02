@@ -38,12 +38,12 @@ const tocHeadings = headings.filter((item) => item.depth >= 2 && item.depth <= 4
 		<BaseHead title={title} description={description} />
 		<style>
 			main {
-				width: min(980px, calc(100% - 2rem));
+				width: min(1280px, calc(100% - 2rem));
 				margin: 0 auto;
 				display: grid;
 				grid-template-columns: 230px minmax(0, 720px);
 				gap: 1.8rem;
-				justify-content: center;
+				justify-content: start;
 				align-items: start;
 			}
 
@@ -74,10 +74,7 @@ const tocHeadings = headings.filter((item) => item.depth >= 2 && item.depth <= 4
 			}
 
 			.article-head {
-				padding: 1.3rem;
-				border: 1px solid rgb(var(--line));
-				background: rgb(var(--surface));
-				border-radius: var(--radius-lg);
+				padding: 0;
 			}
 
 			.article-head h1 {
@@ -103,10 +100,6 @@ const tocHeadings = headings.filter((item) => item.depth >= 2 && item.depth <= 4
 			}
 
 			.body {
-				background: rgb(var(--surface));
-				border: 1px solid rgb(var(--line));
-				border-radius: var(--radius-lg);
-				padding: clamp(1.2rem, 2.5vw, 2.4rem);
 				color: rgb(6, 11, 17);
 			}
 
@@ -129,10 +122,6 @@ const tocHeadings = headings.filter((item) => item.depth >= 2 && item.depth <= 4
 			.body :global(h3),
 			.body :global(h4) {
 				color: rgb(6, 11, 17);
-			}
-
-			.body :global(img) {
-				border: 1px solid rgb(var(--line));
 			}
 
 			.body :global(a) {
@@ -219,10 +208,7 @@ const tocHeadings = headings.filter((item) => item.depth >= 2 && item.depth <= 4
 			.toc {
 				position: sticky;
 				top: 88px;
-				padding: 1rem;
-				border: 1px solid rgb(var(--line));
-				background: rgb(var(--surface));
-				border-radius: var(--radius-md);
+				padding-right: 0.5rem;
 				max-height: calc(100vh - 110px);
 				overflow: auto;
 			}
