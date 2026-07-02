@@ -111,8 +111,16 @@ const tocHeadings = headings.filter((item) => item.depth >= 2 && item.depth <= 4
 			}
 
 			.body :global(p),
-			.body :global(li),
+			.body :global(li) {
+				color: rgba(6, 11, 17, 0.8);
+			}
+
 			.body :global(blockquote) {
+				margin: 1.2rem 0;
+				padding: 0.8rem 1.1rem;
+				border-left: 4px solid rgb(var(--accent));
+				background: rgb(var(--surface-strong));
+				border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 				color: rgba(6, 11, 17, 0.8);
 			}
 
@@ -121,6 +129,10 @@ const tocHeadings = headings.filter((item) => item.depth >= 2 && item.depth <= 4
 			.body :global(h3),
 			.body :global(h4) {
 				color: rgb(6, 11, 17);
+			}
+
+			.body :global(img) {
+				border: 1px solid rgb(var(--line));
 			}
 
 			.body :global(a) {
