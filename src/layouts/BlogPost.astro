@@ -91,7 +91,7 @@ const tocHeadings = headings.filter((item) => item.depth >= 2 && item.depth <= 4
 				justify-content: center;
 				gap: 0.5rem;
 				align-items: center;
-				margin-bottom: 0.8rem;
+				margin-bottom: 1.6rem;
 			}
 
 			.date {
@@ -337,7 +337,7 @@ const tocHeadings = headings.filter((item) => item.depth >= 2 && item.depth <= 4
 			{
 				tocHeadings.length > 0 && (
 					<aside class="toc" aria-label="Table of contents">
-						<h3>목차</h3>
+						<h3>Index</h3>
 						<ul>
 							{tocHeadings.map((item) => <li><a class={`depth-${item.depth}`} href={`#${item.slug}`} data-toc-link>{item.text}</a></li>)}
 						</ul>
