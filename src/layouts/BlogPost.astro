@@ -38,13 +38,23 @@ const tocHeadings = headings.filter((item) => item.depth >= 2 && item.depth <= 4
 		<BaseHead title={title} description={description} />
 		<style>
 			main {
-				width: min(1460px, calc(100% - 2rem));
+				width: min(980px, calc(100% - 2rem));
 				margin: 0 auto;
 				display: grid;
-				grid-template-columns: minmax(0, 1080px) 280px;
+				grid-template-columns: 230px minmax(0, 720px);
 				gap: 1.8rem;
 				justify-content: center;
 				align-items: start;
+			}
+
+			main > article {
+				grid-column: 2;
+				grid-row: 1;
+			}
+
+			main > .toc {
+				grid-column: 1;
+				grid-row: 1;
 			}
 
 			.hero {
@@ -234,9 +244,13 @@ const tocHeadings = headings.filter((item) => item.depth >= 2 && item.depth <= 4
 				padding-left: 1.2rem;
 			}
 
-			@media (max-width: 1460px) {
+			@media (max-width: 1200px) {
 				main {
-					grid-template-columns: minmax(0, 1080px);
+					grid-template-columns: minmax(0, 720px);
+				}
+
+				main > article {
+					grid-column: 1;
 				}
 
 				.toc {
